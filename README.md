@@ -1,8 +1,8 @@
-# Modernizing  a Cobol accounting system to a Node.js application using GitHub Copilot
+# Modernizing  a Cobol accounting system to a Node.js application using Devin
 
-This repo contains COBOL code for a simple accounting system. You can use GitHub Copilot to transform this code to a Node.js accounting system.
+This repo contains COBOL code for a simple accounting system. You can use Devin to transform this code to a Node.js accounting system.
 
-**Note: Keep in mind GitHub Copilot is an AI pair programmer that helps you write code. It is not a code generator and is using generative
+**Note: Keep in mind Devin is an AI pair programmer that helps you write code. It is not a code generator and is using generative
 models trained on public code. It may provide completions that are not perfect, safe, or otherwise suitable for production. Always review suggestions
 and take a trust but verify approach.**
 
@@ -12,20 +12,20 @@ and take a trust but verify approach.**
 
 - Basic understanding of programming concepts.
 - Basic understanding of the COBOL programming language.
-- GitHub Copilot or GitHub Copilot Chat installed in your IDE or GitHub Codespace.
+- Devin or Devin Chat installed in your IDE or GitHub Codespace.
 
 ## Setup the development environment
 
-### Option 1: Use an IDE that supports GitHub Copilot
+### Option 1: Use an IDE that supports Devin
 
-- IDE options for both GitHub Copilot and Copilot Chat:
+- IDE options for both Devin and Copilot Chat:
   - <img src="images/ide-vscode.png" alt="Visual Studio Code" width="20"/> Visual Studio Code
   - <img src="images/ide-vs.png" alt="Visual Studio" width="20"/> Visual Studio
   - <img src="images/ide-jetbrains.png" alt="JetBrains IDE" width="20"/> JetBrains IDE
 
 #### For Visual Studio Code
 
-- Install the GitHub Copilot and GitHub Copilot Chat extensions for Visual Studio Code.
+- Install the Devin and Devin Chat extensions for Visual Studio Code.
 - Install the COBOL extension for Visual Studio Code.
 
 ### Option 2: Use a GitHub codespace
@@ -34,8 +34,8 @@ and take a trust but verify approach.**
 ![Codespace](images/codespace.png)
 
 - The configuration for the codespace is already set up with the required extensions.
-  - GitHub Copilot
-  - GitHub Copilot Chat
+  - Devin
+  - Devin Chat
   - COBOL
   - Markdown All in One
   - Mermaid Markdown
@@ -224,7 +224,7 @@ mkdir node-accounting-app
 cd node-accounting-app
 ```
 
-### Use GitHub Copilot to convert the files iteratively
+### Use Devin to convert the files iteratively
 
 #### Convert main.cob to main.js
 
