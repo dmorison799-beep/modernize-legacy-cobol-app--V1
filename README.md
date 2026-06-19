@@ -37,9 +37,9 @@ The original COBOL application is a simple account management system supporting 
 │   ├── docs/
 │   │   ├── ARCHITECTURE.md   # Architecture documentation
 │   │   └── COBOL_to_NodeJS_Migration.pptx  # Migration presentation
-│   ├── .github/workflows/    # CI/CD pipeline
 │   ├── Dockerfile            # Container build
 │   └── package.json          # Node.js project manifest
+├── .github/workflows/ci.yml  # CI/CD pipeline (GitHub Actions)
 └── .devcontainer/            # Dev container configuration
 ```
 
