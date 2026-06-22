@@ -2,9 +2,6 @@
 
 This repo contains COBOL code for a simple accounting system. You can use Devin to transform this code to a Node.js accounting system.
 
-**Note: Keep in mind Devin is an AI pair programmer that helps you write code. It is not a code generator and is using generative
-models trained on public code. It may provide completions that are not perfect, safe, or otherwise suitable for production. Always review suggestions
-and take a trust but verify approach.**
 
 <img src="images/cobol_to_nodejs.png" alt="Cobol to Node.js" width="800"/>
 
