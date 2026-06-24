@@ -12,3 +12,6 @@ node-accounting-app/*
 
 # coverage
 coverage/
+
+# package-lock (generated)
+package-lock.json
