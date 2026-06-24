@@ -1,6 +1,8 @@
 'use strict';
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const DataStore = require('./data');
 const Operations = require('./operations');
 
@@ -32,13 +34,13 @@ function parseBody(req) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
-  const path = url.pathname;
+  const pathname = url.pathname;
   const method = req.method;
 
   res.setHeader('Content-Type', 'application/json');
 
   try {
-    if (path === '/health' && method === 'GET') {
+    if (pathname === '/health' && method === 'GET') {
       res.writeHead(200);
       res.end(JSON.stringify({
         status: 'healthy',
@@ -48,22 +50,29 @@ const server = http.createServer(async (req, res) => {
         timestamp: new Date().toISOString()
       }));
 
-    } else if (path === '/api/balance' && method === 'GET') {
+    } else if (pathname === '/api/balance' && method === 'GET') {
       const result = operations.viewBalance();
       res.writeHead(200);
       res.end(JSON.stringify(result));
 
-    } else if (path === '/api/credit' && method === 'POST') {
+    } else if (pathname === '/api/credit' && method === 'POST') {
       const body = await parseBody(req);
       const result = operations.credit(body.amount);
       res.writeHead(result.success ? 200 : 400);
       res.end(JSON.stringify(result));
 
-    } else if (path === '/api/debit' && method === 'POST') {
+    } else if (pathname === '/api/debit' && method === 'POST') {
       const body = await parseBody(req);
       const result = operations.debit(body.amount);
       res.writeHead(result.success ? 200 : 400);
       res.end(JSON.stringify(result));
+
+    } else if (pathname === '/' && method === 'GET') {
+      const htmlPath = path.join(__dirname, 'public', 'index.html');
+      const html = fs.readFileSync(htmlPath, 'utf8');
+      res.setHeader('Content-Type', 'text/html');
+      res.writeHead(200);
+      res.end(html);
 
     } else {
       res.writeHead(404);
@@ -77,6 +86,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Accounting server running on port ${PORT}`);
+  console.log(`Dashboard: http://localhost:${PORT}/`);
   console.log(`Health check: http://localhost:${PORT}/health`);
 });
 

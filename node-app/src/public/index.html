@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Management System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: linear-gradient(135deg, #1b3a5c 0%, #3a7ca5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+    }
+
+    .header {
+      background: #1b3a5c;
+      color: #ffffff;
+      padding: 24px 32px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    .balance-section {
+      background: #f8fafc;
+      padding: 32px;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .balance-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .balance-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1b3a5c;
+    }
+
+    .balance-amount::before {
+      content: '$';
+      font-size: 1.5rem;
+      vertical-align: super;
+      margin-right: 2px;
+    }
+
+    .actions {
+      padding: 32px;
+    }
+
+    .action-group {
+      margin-bottom: 20px;
+    }
+
+    .action-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .action-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .input-row input:focus {
+      border-color: #3a7ca5;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-credit {
+      background: #2e7d32;
+      color: #ffffff;
+    }
+
+    .btn-credit:hover {
+      background: #1b5e20;
+    }
+
+    .btn-debit {
+      background: #e65c00;
+      color: #ffffff;
+    }
+
+    .btn-debit:hover {
+      background: #bf4e00;
+    }
+
+    .message {
+      margin-top: 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      text-align: center;
+      display: none;
+    }
+
+    .message.success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+      display: block;
+    }
+
+    .message.error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+
+    .history {
+      padding: 0 32px 32px;
+    }
+
+    .history h3 {
+      font-size: 0.85rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .history-list {
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .history-list li {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-list li:nth-child(odd) {
+      background: #f8fafc;
+    }
+
+    .history-list .credit-item {
+      color: #166534;
+    }
+
+    .history-list .debit-item {
+      color: #991b1b;
+    }
+
+    .history-list .time {
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .footer {
+      background: #f8fafc;
+      padding: 16px 32px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 480px) {
+      .balance-amount {
+        font-size: 2rem;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Account Management System</h1>
+      <p>Modernized from COBOL to Node.js</p>
+    </div>
+
+    <div class="balance-section">
+      <div class="balance-label">Current Balance</div>
+      <div class="balance-amount" id="balance">0.00</div>
+    </div>
+
+    <div class="actions">
+      <div class="action-group">
+        <label for="credit-amount">Credit Account</label>
+        <div class="input-row">
+          <input type="number" id="credit-amount" placeholder="Enter amount" min="0" step="0.01">
+          <button class="btn btn-credit" onclick="credit()">Credit</button>
+        </div>
+      </div>
+
+      <div class="action-group">
+        <label for="debit-amount">Debit Account</label>
+        <div class="input-row">
+          <input type="number" id="debit-amount" placeholder="Enter amount" min="0" step="0.01">
+          <button class="btn btn-debit" onclick="debit()">Debit</button>
+        </div>
+      </div>
+
+      <div class="message" id="message"></div>
+    </div>
+
+    <div class="history">
+      <h3>Transaction History</h3>
+      <ul class="history-list" id="history-list">
+        <li style="color: #94a3b8; text-align: center;">No transactions yet</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      Node.js Accounting App v1.0.0 &mdash; Migrated from Legacy COBOL
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    async function fetchBalance() {
+      try {
+        const res = await fetch(`${API_BASE}/api/balance`);
+        const data = await res.json();
+        document.getElementById('balance').textContent = data.balance.toFixed(2);
+      } catch (err) {
+        showMessage('Failed to fetch balance', 'error');
+      }
+    }
+
+    async function credit() {
+      const input = document.getElementById('credit-amount');
+      const amount = parseFloat(input.value);
+      if (!amount || amount <= 0) {
+        showMessage('Please enter a valid amount', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/credit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('balance').textContent = data.balance.toFixed(2);
+          showMessage(data.message, 'success');
+          addHistory('credit', amount);
+          input.value = '';
+        } else {
+          showMessage(data.message, 'error');
+        }
+      } catch (err) {
+        showMessage('Request failed', 'error');
+      }
+    }
+
+    async function debit() {
+      const input = document.getElementById('debit-amount');
+      const amount = parseFloat(input.value);
+      if (!amount || amount <= 0) {
+        showMessage('Please enter a valid amount', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/debit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('balance').textContent = data.balance.toFixed(2);
+          showMessage(data.message, 'success');
+          addHistory('debit', amount);
+          input.value = '';
+        } else {
+          showMessage(data.message, 'error');
+        }
+      } catch (err) {
+        showMessage('Request failed', 'error');
+      }
+    }
+
+    function showMessage(text, type) {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.className = `message ${type}`;
+      setTimeout(() => { el.className = 'message'; }, 4000);
+    }
+
+    function addHistory(type, amount) {
+      const list = document.getElementById('history-list');
+
+      // Remove "no transactions" placeholder
+      if (list.children.length === 1 && list.children[0].style.color) {
+        list.innerHTML = '';
+      }
+
+      const li = document.createElement('li');
+      const time = new Date().toLocaleTimeString();
+      const sign = type === 'credit' ? '+' : '-';
+      li.className = type === 'credit' ? 'credit-item' : 'debit-item';
+      li.innerHTML = `<span>${sign} $${amount.toFixed(2)}</span><span class="time">${time}</span>`;
+      list.insertBefore(li, list.firstChild);
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('credit-amount').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') credit();
+    });
+    document.getElementById('debit-amount').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') debit();
+    });
+
+    // Load initial balance
+    fetchBalance();
+  </script>
+</body>
+</html>

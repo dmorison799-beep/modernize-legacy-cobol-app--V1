@@ -15,12 +15,12 @@ afterAll((done) => {
   server.close(done);
 });
 
-function request(path, options = {}) {
+function request(reqPath, options = {}) {
   return new Promise((resolve, reject) => {
     const opts = {
       hostname: 'localhost',
       port: 3999,
-      path,
+      path: reqPath,
       method: options.method || 'GET',
       headers: options.headers || {}
     };
@@ -29,7 +29,9 @@ function request(path, options = {}) {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
-        resolve({ statusCode: res.statusCode, body: JSON.parse(data) });
+        const contentType = res.headers['content-type'] || '';
+        const body = contentType.includes('json') ? JSON.parse(data) : data;
+        resolve({ statusCode: res.statusCode, body, contentType });
       });
     });
 
@@ -91,6 +93,16 @@ describe('HTTP Server (REST API for deployment)', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toContain('Insufficient funds');
+  });
+
+  it('GET / should return HTML dashboard', async () => {
+    const res = await request('/');
+    expect(res.statusCode).toBe(200);
+    expect(res.contentType).toContain('text/html');
+    expect(res.body).toContain('Account Management System');
+    expect(res.body).toContain('/api/balance');
+    expect(res.body).toContain('/api/credit');
+    expect(res.body).toContain('/api/debit');
   });
 
   it('GET /unknown should return 404', async () => {
