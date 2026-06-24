@@ -1,7 +1,0 @@
-node_modules
-coverage
-tests
-.eslintrc.json
-.git
-.gitignore
-*.md
