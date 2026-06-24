@@ -1,147 +1,96 @@
 'use strict';
 
-const DataStore = require('../../src/data');
-const Operations = require('../../src/operations');
-const AccountApp = require('../../src/main');
-const { Readable, Writable } = require('stream');
+const { PassThrough, Writable } = require('stream');
+const { AccountApp } = require('../../src/main');
 
-describe('Integration: Accounting System', () => {
-  let dataStore;
-  let operations;
+function createMockOutput() {
+  let buffer = '';
+  const output = new Writable({
+    write(chunk, _encoding, callback) {
+      buffer += chunk.toString();
+      callback();
+    }
+  });
+  output.getOutput = () => buffer;
+  return output;
+}
 
-  beforeEach(() => {
-    dataStore = new DataStore(1000.00);
-    operations = new Operations(dataStore);
+/**
+ * Run the app with scripted answers.
+ * We override ask() to return from a queue so readline stream timing
+ * is irrelevant. This exercises the full run() loop including menu
+ * display, switch dispatch, and all Operations calls.
+ */
+async function runApp(answers) {
+  const input = new PassThrough();
+  const output = createMockOutput();
+  const app = new AccountApp(input, output);
+
+  const queue = [...answers];
+  app.ask = (_rl, _question) => {
+    return Promise.resolve(queue.shift() || '4');
+  };
+
+  await app.run();
+  input.destroy();
+  return output.getOutput();
+}
+
+describe('Integration: Account Management System', () => {
+  // TC-4.1: Exit the Application
+  test('TC-4.1: should exit gracefully when option 4 is selected', async () => {
+    const result = await runApp(['4']);
+    expect(result).toContain('Account Management System');
+    expect(result).toContain('Exiting the program. Goodbye!');
   });
 
-  describe('Full Workflow', () => {
-    test('should handle credit then view balance', () => {
-      operations.credit(500.00);
-      const result = operations.viewBalance();
-      expect(result.balance).toBe(1500.00);
-    });
-
-    test('should handle debit then view balance', () => {
-      operations.debit(200.00);
-      const result = operations.viewBalance();
-      expect(result.balance).toBe(800.00);
-    });
-
-    test('should handle multiple sequential operations', () => {
-      operations.credit(500.00);
-      operations.debit(200.00);
-      operations.credit(100.00);
-      operations.debit(50.00);
-      const result = operations.viewBalance();
-      expect(result.balance).toBe(1350.00);
-    });
-
-    test('should maintain balance after failed debit', () => {
-      operations.credit(100.00);
-      operations.debit(5000.00); // should fail
-      const result = operations.viewBalance();
-      expect(result.balance).toBe(1100.00); // only credit applied
-    });
-
-    test('should handle debit to zero then reject further debits', () => {
-      operations.debit(1000.00);
-      const result = operations.debit(1.00);
-      expect(result.success).toBe(false);
-      expect(result.message).toBe('Insufficient funds for this debit.');
-      expect(operations.viewBalance().balance).toBe(0);
-    });
+  test('should display menu on startup', async () => {
+    const result = await runApp(['4']);
+    expect(result).toContain('1. View Balance');
+    expect(result).toContain('2. Credit Account');
+    expect(result).toContain('3. Debit Account');
+    expect(result).toContain('4. Exit');
   });
 
-  describe('TC-4.1: Application Exit', () => {
-    test('should exit gracefully with choice 4', async () => {
-      const input = new Readable({ read() {} });
-      const outputChunks = [];
-      const output = new Writable({
-        write(chunk, encoding, callback) {
-          outputChunks.push(chunk.toString());
-          callback();
-        }
-      });
-
-      const app = new AccountApp(input, output);
-
-      const runPromise = app.run();
-
-      // Simulate user entering '4' to exit
-      input.push('4\n');
-
-      await runPromise;
-
-      const fullOutput = outputChunks.join('');
-      expect(fullOutput).toContain('Account Management System');
-      expect(fullOutput).toContain('Exiting the program. Goodbye!');
-      expect(app.running).toBe(false);
-    });
-
-    test('should handle view balance then exit', async () => {
-      const input = new Readable({ read() {} });
-      const outputChunks = [];
-      const output = new Writable({
-        write(chunk, encoding, callback) {
-          outputChunks.push(chunk.toString());
-          callback();
-        }
-      });
-
-      const app = new AccountApp(input, output);
-
-      const runPromise = app.run();
-
-      // View balance then exit
-      input.push('1\n');
-      // Small delay to allow processing
-      await new Promise(resolve => setTimeout(resolve, 50));
-      input.push('4\n');
-
-      await runPromise;
-
-      const fullOutput = outputChunks.join('');
-      expect(fullOutput).toContain('Current balance: 1000.00');
-      expect(fullOutput).toContain('Exiting the program. Goodbye!');
-    });
-
-    test('should handle invalid choice then exit', async () => {
-      const input = new Readable({ read() {} });
-      const outputChunks = [];
-      const output = new Writable({
-        write(chunk, encoding, callback) {
-          outputChunks.push(chunk.toString());
-          callback();
-        }
-      });
-
-      const app = new AccountApp(input, output);
-
-      const runPromise = app.run();
-
-      input.push('9\n');
-      await new Promise(resolve => setTimeout(resolve, 50));
-      input.push('4\n');
-
-      await runPromise;
-
-      const fullOutput = outputChunks.join('');
-      expect(fullOutput).toContain('Invalid choice, please select 1-4.');
-      expect(fullOutput).toContain('Exiting the program. Goodbye!');
-    });
+  test('should view balance then exit', async () => {
+    const result = await runApp(['1', '4']);
+    expect(result).toContain('Current balance: 1000.00');
+    expect(result).toContain('Exiting the program. Goodbye!');
   });
 
-  describe('Data Persistence Across Operations', () => {
-    test('should persist data correctly through DataStore', () => {
-      const store = new DataStore(0);
-      const ops = new Operations(store);
+  test('should credit account then view balance then exit', async () => {
+    const result = await runApp(['2', '200', '1', '4']);
+    expect(result).toContain('Amount credited. New balance: 1200.00');
+    expect(result).toContain('Current balance: 1200.00');
+  });
 
-      ops.credit(100);
-      ops.credit(200);
-      ops.debit(50);
+  test('should debit account then view balance then exit', async () => {
+    const result = await runApp(['3', '300', '1', '4']);
+    expect(result).toContain('Amount debited. New balance: 700.00');
+    expect(result).toContain('Current balance: 700.00');
+  });
 
-      expect(store.read()).toBe(250);
-      expect(ops.viewBalance().balance).toBe(250);
-    });
+  test('should handle insufficient funds during debit', async () => {
+    const result = await runApp(['3', '2000', '1', '4']);
+    expect(result).toContain('Insufficient funds for this debit.');
+    expect(result).toContain('Current balance: 1000.00');
+  });
+
+  test('should handle invalid menu choice', async () => {
+    const result = await runApp(['9', '4']);
+    expect(result).toContain('Invalid choice, please select 1-4.');
+  });
+
+  test('full workflow: credit, debit, view, exit', async () => {
+    const result = await runApp([
+      '2', '500',    // credit 500 → 1500
+      '3', '200',    // debit 200 → 1300
+      '1',           // view balance
+      '4'            // exit
+    ]);
+    expect(result).toContain('Amount credited. New balance: 1500.00');
+    expect(result).toContain('Amount debited. New balance: 1300.00');
+    expect(result).toContain('Current balance: 1300.00');
+    expect(result).toContain('Exiting the program. Goodbye!');
   });
 });

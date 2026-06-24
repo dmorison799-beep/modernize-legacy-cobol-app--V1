@@ -1,9 +1,7 @@
 node_modules
-npm-debug.log
 coverage
-.eslintrc.json
 tests
-*.test.js
+.eslintrc.json
 .git
 .gitignore
-README.md
+*.md
